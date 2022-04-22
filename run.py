@@ -87,6 +87,7 @@ if __name__ == "__main__":
     ##########################################################################################
     
     launch_file = join(base_path, '..', 'jackal_helper/launch/move_base_DWA.launch')
+    # launch_file = join(base_path, '..', 'jackal_helper/launch/rosnav.launch')
     nav_stack_process = subprocess.Popen([
         'roslaunch',
         launch_file,
@@ -95,7 +96,21 @@ if __name__ == "__main__":
     # Make sure your navigation stack recives a goal of (0, 10, 0), which is 10 meters away
     # along postive y-axis.
     import actionlib
-    from geometry_msgs.msg import Quaternion
+    from geometry_msgs.msg import Quaternion, PoseStamped
+    # _goal_pub = rospy.Publisher(
+    #             f"goal",
+    #             PoseStamped,
+    #             queue_size=1,
+    #         )
+    # goal = PoseStamped()
+    # goal.header.frame_id = 'odom'
+    # goal.pose.position.x = GOAL_POSITION[0]
+    # goal.pose.position.y = GOAL_POSITION[1]
+    # goal.pose.position.z = 0
+    # goal.pose.orientation = Quaternion(0, 0, 0, 1)
+    # _goal_pub.publish(goal)
+
+    # Move_base version
     from move_base_msgs.msg import MoveBaseGoal, MoveBaseAction
     nav_as = actionlib.SimpleActionClient('/move_base', MoveBaseAction)
     mb_goal = MoveBaseGoal()
@@ -106,10 +121,9 @@ if __name__ == "__main__":
     mb_goal.target_pose.pose.orientation = Quaternion(0, 0, 0, 1)
 
     nav_as.wait_for_server()
+    print("Publisching goal!")
     nav_as.send_goal(mb_goal)
-
-
-
+    print("Publisched goal!")
 
     ##########################################################################################
     ## 2. Start navigation

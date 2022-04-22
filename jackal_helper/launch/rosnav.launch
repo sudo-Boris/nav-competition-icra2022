@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<launch>
+
+  <!-- Arguments -->
+  <arg name="model" default="jackal"/>
+  <arg name="cmd_vel_topic" default="cmd_vel" />
+  <arg name="odom_topic" default="odom" />
+  <arg name="agent_name" default="jackal_new"/>
+  <arg name="trainings_environment" default="rosnav" />
+  <param name="bool_goal_reached" value="true"/>
+
+  <param name="real" value="false"/>
+  <param name="train_mode" value="false"/>
+
+  <!-- Robot parameters for DRL agent -->
+  <!-- <param name="radius" value="0.267"/>
+  <param name="laser_beams" value="720"/>
+  <param name="laser_range" value="30"/> -->
+  <param name="network_type" value="rosnav"/>
+  <param name="trainings_environment" value="rosnav"/>
+  <rosparam file="$(find arena_local_planner_drl)/configs/jackal_params.yaml" command="load" />
+  
+
+  <!-- move_base -->
+  <node pkg="move_base" type="move_base" respawn="false" name="move_base" output="screen">
+    <rosparam file="$(find jackal_helper)/configs/params/costmap_common_params.yaml" command="load" ns="global_costmap" />
+    <rosparam file="$(find jackal_helper)/configs/params/costmap_common_params.yaml" command="load" ns="local_costmap" />
+    
+    <!-- <rosparam file="$(find jackal_helper)/configs/params/local_costmap_params.yaml" command="load" />
+    <rosparam file="$(find jackal_helper)/configs/params/global_costmap_params.yaml" command="load" /> -->
+
+    <rosparam file="$(find jackal_helper)/configs/params/base_local_planner_params.yaml" command="load" />
+    <rosparam file="$(find jackal_helper)/configs/params/move_base_params.yaml" command="load" />
+
+  </node>
+
+  <!-- spacial_horizon -->
+  <node pkg="arena_spacial_horizon" type="spacial_horizon_node" name="spacial_horizon_node" output="screen">
+    <rosparam file="$(find jackal_helper)/configs/params/plan_fsm_param.yaml" command="load" /> <!-- ns="fsm"-->
+    <remap from="odom" to="odometry/filtered" />
+  </node>
+
+  <!-- run_agent -->
+  <group if="$(eval arg('trainings_environment') == 'rosnav')">
+    <node
+      name="drl_local_planner" 
+      pkg="arena_local_planner_drl" 
+      type="drl_agent_node.py" 
+      args="$(arg agent_name)"
+      output="screen">
+      <remap from="odom" to="odometry/filtered" />
+    </node>
+  </group>
+
+</launch>

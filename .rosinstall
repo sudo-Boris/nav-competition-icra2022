@@ -1,0 +1,4 @@
+- git:
+    local-name: ../forks/stable-baselines3
+    uri: https://github.com/ignc-research/stable-baselines3
+    version: master
